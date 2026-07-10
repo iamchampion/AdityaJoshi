@@ -23,6 +23,7 @@ const themeToggle = document.querySelector(".theme-toggle");
 const lightbox = document.querySelector(".lightbox");
 const lightboxImage = document.querySelector(".lightbox img");
 const lightboxClose = document.querySelector(".lightbox button");
+const gallery = document.querySelector(".gallery");
 const menuButton = document.querySelector(".menu-button");
 const sidePanel = document.querySelector(".side-panel");
 const closePanel = document.querySelector(".close-panel");
@@ -127,18 +128,28 @@ document.addEventListener("mousemove", (event) => {
   document.documentElement.style.setProperty("--y", `${event.clientY}px`);
 });
 
-document.querySelectorAll(".gallery img").forEach((image) => {
-  image.addEventListener("click", () => {
-    lightboxImage.src = image.src;
-    lightbox.classList.add("open");
-    lightbox.setAttribute("aria-hidden", "false");
-  });
-});
+function openLightbox(src, alt) {
+  lightboxImage.src = src;
+  lightboxImage.alt = alt || "Expanded gallery image";
+  lightbox.classList.add("open");
+  lightbox.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
 
 function closeLightbox() {
   lightbox.classList.remove("open");
   lightbox.setAttribute("aria-hidden", "true");
+  lightboxImage.src = "";
+  document.body.classList.remove("modal-open");
 }
+
+gallery.addEventListener("click", (event) => {
+  const link = event.target.closest(".gallery-item");
+  if (!link) return;
+  const image = link.querySelector("img");
+  event.preventDefault();
+  openLightbox(link.getAttribute("href"), image ? image.alt : "");
+});
 
 lightbox.addEventListener("click", (event) => {
   if (event.target === lightbox) closeLightbox();
