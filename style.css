@@ -208,17 +208,18 @@ body.dark .navbar {
 .panel-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 50;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
 .panel-backdrop {
+  z-index: 50;
   background: rgba(0, 0, 0, 0.35);
 }
 
 .side-panel {
+  z-index: 60;
   right: auto;
   display: flex;
   width: min(390px, calc(100% - 34px));
@@ -286,6 +287,7 @@ body.dark .navbar {
   z-index: 3;
   width: min(1220px, calc(100% - 40px));
   margin: 0 auto;
+  scroll-margin-top: 96px;
 }
 
 .hero {
@@ -405,9 +407,7 @@ h2 {
 
 .btn:hover,
 .contact-form button:hover,
-.mini-card:hover,
-.gallery-item:hover img,
-.gallery img:hover {
+.mini-card:hover {
   transform: translateY(-5px);
 }
 
@@ -681,29 +681,126 @@ body.dark .stat strong {
   background: var(--black);
 }
 
-.gallery {
-  columns: 3;
-  column-gap: 16px;
+.slideshow {
+  position: relative;
   margin-top: 36px;
 }
 
-.gallery-item {
-  display: block;
-  margin-bottom: 16px;
-  break-inside: avoid;
-  border-radius: 8px;
-  touch-action: manipulation;
-}
-
-.gallery img {
-  display: block;
-  width: 100%;
-  cursor: zoom-in;
+.slideshow-viewport {
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
+  background: var(--paper);
+  box-shadow: 0 20px 70px rgba(17, 17, 17, 0.08);
+}
+
+.slideshow-track {
+  display: flex;
+  touch-action: pan-y;
+  transition: transform 0.38s ease;
+}
+
+.slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.slide img {
+  display: block;
+  width: 100%;
+  height: min(62vh, 620px);
+  min-height: 300px;
+  object-fit: cover;
   background: white;
-  box-shadow: 0 18px 50px rgba(17, 17, 17, 0.09);
-  transition: transform 0.24s ease, filter 0.24s ease;
+}
+
+.slide-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(17, 17, 17, 0.16);
+}
+
+body.dark .slide-arrow {
+  background: rgba(20, 20, 20, 0.85);
+}
+
+.slide-prev {
+  left: 12px;
+}
+
+.slide-next {
+  right: 12px;
+}
+
+.slide-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.slide-counter {
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.slide-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 420px;
+}
+
+.slide-dots button {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.28);
+  cursor: pointer;
+  padding: 0;
+}
+
+body.dark .slide-dots button {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.slide-dots button.active {
+  width: 22px;
+  background: var(--black);
+}
+
+body.dark .slide-dots button.active {
+  background: white;
+}
+
+@media (max-width: 640px) {
+  .slide img {
+    height: 58vh;
+    min-height: 260px;
+  }
+
+  .slide-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.35rem;
+  }
 }
 
 .contact-list {
@@ -797,43 +894,6 @@ footer {
   text-align: center;
 }
 
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: none;
-  place-items: center;
-  background: rgba(0, 0, 0, 0.86);
-  padding: 24px;
-  touch-action: manipulation;
-}
-
-.lightbox.open {
-  display: grid;
-}
-
-.lightbox img {
-  max-width: min(100%, 1120px);
-  max-height: 86vh;
-  width: auto;
-  height: auto;
-  border-radius: 8px;
-  object-fit: contain;
-}
-
-.lightbox button {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  border: 0;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.14);
-  color: white;
-  font-size: 2rem;
-  line-height: 1;
-  padding: 8px 15px;
-}
-
 .reveal {
   opacity: 0;
   transform: translateY(30px);
@@ -871,9 +931,6 @@ footer {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .gallery {
-    columns: 2;
-  }
 }
 
 @media (max-width: 640px) {
@@ -894,10 +951,6 @@ footer {
   .card-grid,
   .skill-grid {
     grid-template-columns: 1fr;
-  }
-
-  .gallery {
-    columns: 1;
   }
 
   .portrait-card img {

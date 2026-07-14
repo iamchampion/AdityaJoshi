@@ -20,10 +20,6 @@ const counters = document.querySelectorAll("[data-count]");
 const testimonialText = document.querySelector("#testimonial-text");
 const testimonialDots = document.querySelectorAll(".testimonial-dots button");
 const themeToggle = document.querySelector(".theme-toggle");
-const lightbox = document.querySelector(".lightbox");
-const lightboxImage = document.querySelector(".lightbox img");
-const lightboxClose = document.querySelector(".lightbox button");
-const gallery = document.querySelector(".gallery");
 const menuButton = document.querySelector(".menu-button");
 const sidePanel = document.querySelector(".side-panel");
 const closePanel = document.querySelector(".close-panel");
@@ -114,12 +110,26 @@ function closeSidePanel() {
 menuButton.addEventListener("click", openPanel);
 closePanel.addEventListener("click", closeSidePanel);
 panelBackdrop.addEventListener("click", closeSidePanel);
-panelLinks.forEach((link) => link.addEventListener("click", closeSidePanel));
+
+panelLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    const href = link.getAttribute("href") || "";
+    closeSidePanel();
+    if (href.startsWith("#")) {
+      event.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        // Let the panel-close animation start before scrolling so the
+        // jump isn't fought by the overlay's own transition on mobile.
+        setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+      }
+    }
+  });
+});
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeSidePanel();
-    closeLightbox();
   }
 });
 
@@ -128,34 +138,51 @@ document.addEventListener("mousemove", (event) => {
   document.documentElement.style.setProperty("--y", `${event.clientY}px`);
 });
 
-function openLightbox(src, alt) {
-  lightboxImage.src = src;
-  lightboxImage.alt = alt || "Expanded gallery image";
-  lightbox.classList.add("open");
-  lightbox.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
+const slideshow = document.querySelector("#gallery-slideshow");
+if (slideshow) {
+  const track = slideshow.querySelector(".slideshow-track");
+  const slides = slideshow.querySelectorAll(".slide");
+  const prevBtn = slideshow.querySelector(".slide-prev");
+  const nextBtn = slideshow.querySelector(".slide-next");
+  const counter = slideshow.querySelector(".slide-counter");
+  const dotsWrap = slideshow.querySelector(".slide-dots");
+  let current = 0;
+
+  slides.forEach((_, index) => {
+    const dot = document.createElement("button");
+    dot.setAttribute("aria-label", `Go to photo ${index + 1}`);
+    dot.addEventListener("click", () => goToSlide(index));
+    dotsWrap.appendChild(dot);
+  });
+  const dots = dotsWrap.querySelectorAll("button");
+
+  function renderSlide() {
+    track.style.transform = `translateX(-${current * 100}%)`;
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    dots.forEach((dot, index) => dot.classList.toggle("active", index === current));
+  }
+
+  function goToSlide(index) {
+    current = (index + slides.length) % slides.length;
+    renderSlide();
+  }
+
+  prevBtn.addEventListener("click", () => goToSlide(current - 1));
+  nextBtn.addEventListener("click", () => goToSlide(current + 1));
+
+  let touchStartX = 0;
+  track.addEventListener("touchstart", (event) => {
+    touchStartX = event.touches[0].clientX;
+  }, { passive: true });
+
+  track.addEventListener("touchend", (event) => {
+    const diff = event.changedTouches[0].clientX - touchStartX;
+    if (diff > 40) goToSlide(current - 1);
+    else if (diff < -40) goToSlide(current + 1);
+  });
+
+  renderSlide();
 }
-
-function closeLightbox() {
-  lightbox.classList.remove("open");
-  lightbox.setAttribute("aria-hidden", "true");
-  lightboxImage.src = "";
-  document.body.classList.remove("modal-open");
-}
-
-gallery.addEventListener("click", (event) => {
-  const link = event.target.closest(".gallery-item");
-  if (!link) return;
-  const image = link.querySelector("img");
-  event.preventDefault();
-  openLightbox(link.getAttribute("href"), image ? image.alt : "");
-});
-
-lightbox.addEventListener("click", (event) => {
-  if (event.target === lightbox) closeLightbox();
-});
-
-lightboxClose.addEventListener("click", closeLightbox);
 
 function resizeCanvas() {
   canvas.width = canvas.offsetWidth * window.devicePixelRatio;
